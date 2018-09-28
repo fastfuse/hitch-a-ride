@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import json
-import requests
-from app import app
 from flask import render_template
+
+from app import app
 
 
 @app.route('/')
