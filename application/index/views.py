@@ -2,7 +2,7 @@
 
 from flask import render_template
 
-from app import app
+from application import app
 
 
 @app.route('/')
@@ -13,5 +13,3 @@ def index():
 @app.route('/map')
 def map():
     return render_template('draft.html')
-
-

@@ -17,7 +17,7 @@ $ pip install -r requirements.txt
 * Create `.env` file with following items
 ```sh
 APP_SETTINGS=config.DevelopmentConfig
-FLASK_APP=app/__init__.py
+FLASK_APP=application/__init__.py
 FLASK_ENV=development
 ```
 
