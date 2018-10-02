@@ -2,6 +2,7 @@ import os
 
 from flask import Flask
 from flask_admin import Admin
+from flask_jwt_extended import JWTManager
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -22,6 +23,9 @@ migrate = Migrate(app, db)
 
 # logger instance
 logger = app.logger
+
+# JWT stuff
+jwt = JWTManager(app)
 
 
 # ===========================================

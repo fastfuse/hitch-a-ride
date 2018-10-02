@@ -1,40 +1,32 @@
-from datetime import datetime, timedelta
+from collections import namedtuple
 
-import jwt
+from voluptuous import Required, All, Length, Schema
 
-from application import app
+# namedtuple to simplify creation of response messages
+Response = namedtuple('Response', ['status', 'message'])
 
 
-def encode_auth_token(user_id):
+def json_resp(status, message):
     """
-    Generates the Auth Token
+    JSON-formatted response
     """
-    try:
-        payload = {'exp': datetime.utcnow() + timedelta(days=1),
-                   'iat': datetime.utcnow(),
-                   'sub': user_id}
+    return Response(status, message)._asdict()
 
-        return jwt.encode(payload, app.config.get('SECRET_KEY'),
-                          algorithm='HS256')
+# JSON validation
 
-    except Exception as e:
-        return e
-
-
-def decode_auth_token(auth_token):
-    """
-    Validates the auth token
-    """
-    try:
-        payload = jwt.decode(auth_token, app.config.get('SECRET_KEY'))
-        # is_blacklisted_token = BlacklistToken.check_blacklist(auth_token)
-        # if is_blacklisted_token:
-        #     return 'Token blacklisted. Please log in again.'
-        # else:
-        #     user_data = {'user': payload['sub'], 'role': payload['role']}
-        #     return user_data
-
-    except jwt.ExpiredSignatureError:
-        return 'Signature expired. Please log in again.'
-    except jwt.InvalidTokenError:
-        return 'Invalid token. Please log in again.'
+# BASE_SCHEMA = Schema({
+#     Required('ticket_uid'): All(str, Length(min=1))
+# })
+#
+# PAYMENT_SCHEMA = BASE_SCHEMA.extend({
+#     Required('vehicle_uid'): All(str, Length(min=1)),
+#     Required('transaction_uid'): All(str, Length(min=1))
+# })
+#
+# REFILL_SCHEMA = BASE_SCHEMA.extend({
+#     Required('trips', default=1): int
+# })
+#
+# VALIDATION_SCHEMA = BASE_SCHEMA.extend({
+#     Required('vehicle_uid'): All(str, Length(min=1))
+# })

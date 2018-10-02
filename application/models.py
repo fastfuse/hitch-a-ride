@@ -3,7 +3,7 @@ from datetime import datetime
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from application import db, login
+from application import db
 
 
 class BaseMixin:
@@ -85,5 +85,6 @@ class Trip(db.Model, BaseMixin):
     id = db.Column(db.Integer, primary_key=True)
     route = db.Column('route', db.String, nullable=False)
     timestamp = db.Column('timestamp', db.DateTime, nullable=False)
+    # departure = db.Column('timestamp', db.DateTime, nullable=False)
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
