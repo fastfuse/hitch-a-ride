@@ -35,3 +35,11 @@ $ docker run -it -p 5000:5000 <image-name>
 ```
 
 Open your browser and check [127.0.0.1:5000](http://127.0.0.1:5000)
+
+
+#### To start environment (w/ database)
+
+```sh
+$ docker-compose build app
+$ docker-compose up
+```
