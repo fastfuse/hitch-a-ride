@@ -1,15 +1,28 @@
-# -*- coding: utf-8 -*-
-
 """
 Authentication views.
 """
+
 from flask import request, make_response, jsonify
 from flask.views import MethodView
-from flask_jwt_extended import create_access_token, create_refresh_token, jwt_refresh_token_required, get_jwt_identity
+from flask_jwt_extended import (create_access_token,
+                                create_refresh_token,
+                                jwt_refresh_token_required,
+                                get_jwt_identity,
+                                jwt_required,
+                                get_jti,
+                                get_raw_jwt)
 
-from application import logger as log
-from application import models, utils, db
+from application import logger as log, jwt
+from application import models, utils
+from application.exceptions import TokenNotFound
+from application.utils import is_revoked, revoke_token, store_token
 from . import auth_blueprint
+
+
+# Callback function to check if a token has been revoked
+@jwt.token_in_blacklist_loader
+def check_if_token_revoked(decoded_token):
+    return is_revoked(decoded_token)
 
 
 class RegistrationView(MethodView):
@@ -19,14 +32,7 @@ class RegistrationView(MethodView):
 
     def post(self):
         # get the post data
-
         data = request.get_json()
-        # print(data)
-
-        # try:
-        #     BASE_SCHEMA(data)
-        # except MultipleInvalid as e:
-        #     return jsonify(json_resp("Failure", str(e))), 400
 
         # check if user already exists
         user = models.User.query.filter_by(email=data.get('email')).first()
@@ -45,9 +51,7 @@ class RegistrationView(MethodView):
 
                 user.role = role
                 user.hash_password(data.get('password'))
-
-                db.session.add(user)
-                db.session.commit()
+                user.save()
 
                 response = utils.json_resp('Success', 'Successfully registered')
 
@@ -75,14 +79,22 @@ class LoginView(MethodView):
         # TODO: validate json
 
         try:
-            # fetch the user data
+            # fetch user data
             user = models.User.query.filter_by(email=data.get('email')).first()
 
             if user and user.check_password(data.get('password')):
+
+                access_token = create_access_token(identity=user.email)
+                refresh_token = create_refresh_token(identity=user.email)
+
+                # store tokens to db
+                store_token(access_token)
+                store_token(refresh_token)
+
                 response = {'status': 'Success',
                             'message': 'Successfully logged in',
-                            'access_token': create_access_token(identity=user.email),
-                            'refresh_token': create_refresh_token(identity=user.email)
+                            'access_token': access_token,
+                            'refresh_token': refresh_token
                             }
 
                 return make_response(jsonify(response)), 200
@@ -97,6 +109,39 @@ class LoginView(MethodView):
             return make_response(jsonify(response)), 500
 
 
+class LogoutView(MethodView):
+    """
+    User logout Resource.
+    Invalidate (blacklist) user's access and refresh tokens
+    """
+
+    decorators = [jwt_required]
+
+    def post(self):
+        data = request.get_json()
+
+        user_identity = get_jwt_identity()
+
+        # TODO: refactor
+        access_token_id = get_raw_jwt().get("jti")
+        refresh_token_id = get_jti(data.get("refresh_token"))
+
+        try:
+            revoke_token(access_token_id, user_identity)
+            revoke_token(refresh_token_id, user_identity)
+
+            response = utils.json_resp('Success', 'Successfully Logged out')
+
+            return make_response(jsonify(response)), 200
+
+        except TokenNotFound as e:
+            log.error(e)
+
+            response = utils.json_resp('Failure', 'The specified token was not found')
+
+            return make_response(jsonify(response)), 404
+
+
 class RefreshTokenView(MethodView):
     """
     Token refresh Resource
@@ -105,15 +150,12 @@ class RefreshTokenView(MethodView):
     decorators = [jwt_refresh_token_required]
 
     def post(self):
-        # get the post data
-        # data = request.get_json()
-
-        # TODO: validate json
-        # TODO: check user existence
-        email = get_jwt_identity()
+        user_identity = get_jwt_identity()
+        access_token = create_access_token(identity=user_identity)
+        store_token(access_token)
 
         response = {'status': 'Success',
-                    'access_token': create_access_token(identity=email)
+                    'access_token': access_token
                     }
 
         return make_response(jsonify(response)), 200
@@ -127,6 +169,10 @@ auth_blueprint.add_url_rule('/register',
 
 auth_blueprint.add_url_rule('/login',
                             view_func=LoginView.as_view('login'),
+                            methods=['POST'])
+
+auth_blueprint.add_url_rule('/logout',
+                            view_func=LogoutView.as_view('logout'),
                             methods=['POST'])
 
 auth_blueprint.add_url_rule('/refresh',

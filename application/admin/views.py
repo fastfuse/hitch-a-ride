@@ -21,3 +21,4 @@ class SecureModelView(ModelView):
 admin.add_view(SecureModelView(models.User, db.session))
 admin.add_view(ModelView(models.Role, db.session))
 admin.add_view(ModelView(models.Trip, db.session))
+admin.add_view(ModelView(models.TokenBlacklist, db.session))
