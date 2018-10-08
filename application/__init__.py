@@ -2,20 +2,16 @@ import os
 
 from flask import Flask
 from flask_admin import Admin
-from flask_admin.contrib.sqla import ModelView
 from flask_jwt_extended import JWTManager
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-
-# from application.admin.views import SecureAdminIndexView
 
 app = Flask(__name__)
 app.config.from_object(os.environ['APP_SETTINGS'])
 
 # Login
 login = LoginManager(app)
-# login.login_view = 'login'
 
 # Database
 db = SQLAlchemy(app)
@@ -40,14 +36,15 @@ def make_shell_context():
 
 from application import models
 
-from .admin.views import SecureAdminIndexView, SecureModelView
+from .admin.views import SecureModelView, CustomUserView, SecureAdminIndexView
 
 # Admin
-admin = Admin(app, name="Hitch A Ride Admin",
+admin = Admin(app, name="Hitch A Ride",
               index_view=SecureAdminIndexView(),
-              base_template='admin/custom_nav.html')
+              base_template='admin/custom_nav.html',
+              template_mode='bootstrap3')
 
-admin.add_view(SecureModelView(models.User, db.session))
+admin.add_view(CustomUserView(models.User, db.session))
 admin.add_view(SecureModelView(models.Role, db.session))
 admin.add_view(SecureModelView(models.Trip, db.session))
 admin.add_view(SecureModelView(models.TokenBlacklist, db.session))

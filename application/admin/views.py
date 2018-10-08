@@ -2,17 +2,13 @@
 Admin views.
 """
 
-from flask import Flask, url_for, redirect, render_template, request
-
-from flask_admin.contrib.sqla import ModelView
-
+from flask import url_for, redirect, request
 from flask_admin import AdminIndexView, expose, helpers
+from flask_admin.contrib.sqla import ModelView
 from flask_login import current_user, login_user, logout_user
-from werkzeug.security import check_password_hash
-
-from application import admin, models, db, login
-
 from wtforms import form, fields, validators
+
+from application import models, db, login
 
 
 # Create user loader function
@@ -29,19 +25,12 @@ class SecureModelView(ModelView):
     Make view accessible only for admin.
     """
 
-    # column_list = ['email', 'first_name', 'last_name', 'role', 'registered_on']
-
-    # exclude password hash from admin view
-    column_exclude_list = ['password_hash', ]
-
     def is_accessible(self):
         return current_user.is_authenticated and current_user.role.name == 'Admin'
 
 
-# admin_ext.add_view(SecureModelView(models.User, db.session))
-# admin_ext.add_view(ModelView(models.Role, db.session))
-# admin_ext.add_view(ModelView(models.Trip, db.session))
-# admin_ext.add_view(ModelView(models.TokenBlacklist, db.session))
+class CustomUserView(SecureModelView):
+    column_list = ['email', 'first_name', 'last_name', 'role', 'registered_on']
 
 
 # ======================================================================
@@ -55,9 +44,6 @@ class LoginForm(form.Form):
 
         if user is None:
             raise validators.ValidationError('Invalid email')
-
-        if not user.check_password(self.password.data):
-            raise validators.ValidationError('Invalid password')
 
     def validate_password(self, field):
         if not self.user:
@@ -73,7 +59,6 @@ class LoginForm(form.Form):
 
 
 class SecureAdminIndexView(AdminIndexView):
-
     @expose('/')
     def index(self):
         if not current_user.is_authenticated:
