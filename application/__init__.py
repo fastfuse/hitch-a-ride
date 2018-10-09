@@ -35,11 +35,3 @@ app.register_blueprint(admin_blueprint)
 app.register_blueprint(auth_blueprint)
 app.register_blueprint(index_blueprint)
 app.register_blueprint(api_blueprint)
-
-
-@app.shell_context_processor
-def make_shell_context():
-    """
-    Add db and models to shell context.
-    """
-    return {'db': db, 'models': models}

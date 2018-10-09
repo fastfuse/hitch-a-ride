@@ -149,6 +149,17 @@ class RefreshTokenView(MethodView):
 
     decorators = [jwt_refresh_token_required]
 
+    def get(self):
+        user_identity = get_jwt_identity()
+        access_token = create_access_token(identity=user_identity)
+        store_token(access_token)
+
+        response = {'status': 'Success',
+                    'access_token': access_token
+                    }
+
+        return make_response(jsonify(response)), 200
+
     def post(self):
         user_identity = get_jwt_identity()
         access_token = create_access_token(identity=user_identity)
@@ -177,4 +188,4 @@ auth_blueprint.add_url_rule('/logout',
 
 auth_blueprint.add_url_rule('/refresh',
                             view_func=RefreshTokenView.as_view('refresh'),
-                            methods=['POST'])
+                            methods=['GET', 'POST'])
