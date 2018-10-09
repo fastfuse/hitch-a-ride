@@ -42,9 +42,6 @@ class User(db.Model, BaseMixin, UserMixin):
     password_hash = db.Column('password', db.String)
     registered_on = db.Column('registered_on', db.DateTime, default=datetime.now)
 
-    # role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
-    # role = db.relationship('Role', backref=db.backref('users', lazy='dynamic')
-
     role = db.relationship('Role', secondary=user_role, uselist=False,
                            backref=db.backref('users', lazy='dynamic'))
 

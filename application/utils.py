@@ -8,9 +8,12 @@ from application import db
 from application.exceptions import TokenNotFound
 from application.models import TokenBlacklist
 
-# namedtuple to simplify creation of response messages
+# ===================  namedtuple to simplify creation of response messages  ===================
+
 Response = namedtuple('Response', ['status', 'message'])
 
+
+# ===================================================================================
 
 def json_resp(status, message):
     """
@@ -40,6 +43,8 @@ def json_resp(status, message):
 
 
 # ======================== Blacklist helpers ================
+
+# TODO: move to auth.utils ?
 
 def _epoch_utc_to_datetime(epoch_utc):
     """

@@ -3,12 +3,12 @@ Admin views.
 """
 
 from flask import url_for, redirect, request
-from flask_admin import AdminIndexView, expose, helpers
+from flask_admin import AdminIndexView, expose, helpers, Admin
 from flask_admin.contrib.sqla import ModelView
 from flask_login import current_user, login_user, logout_user
-from wtforms import form, fields, validators
 
-from application import models, db, login
+from application import models, db, login, app
+from application.admin.forms import LoginForm
 
 
 # Create user loader function
@@ -17,12 +17,10 @@ def load_user(user_id):
     return db.session.query(models.User).get(int(user_id))
 
 
-# TODO: secure
-
 class SecureModelView(ModelView):
     """
     Secure Model View.
-    Make view accessible only for admin.
+    Make view accessible only for users with role 'Admin'.
     """
 
     def is_accessible(self):
@@ -34,28 +32,6 @@ class CustomUserView(SecureModelView):
 
 
 # ======================================================================
-
-class LoginForm(form.Form):
-    email = fields.StringField(validators=[validators.required()])
-    password = fields.PasswordField(validators=[validators.required()])
-
-    def validate_email(self, field):
-        user = self.get_user()
-
-        if user is None:
-            raise validators.ValidationError('Invalid email')
-
-    def validate_password(self, field):
-        if not self.user:
-            return
-
-        if not self.user.check_password(self.password.data):
-            raise validators.ValidationError('Invalid password')
-
-    def get_user(self):
-        self.user = db.session.query(models.User).filter_by(email=self.email.data).first()
-
-        return self.user
 
 
 class SecureAdminIndexView(AdminIndexView):
@@ -87,3 +63,18 @@ class SecureAdminIndexView(AdminIndexView):
         logout_user()
 
         return redirect(url_for('.index'))
+
+
+# ======================================================================
+
+
+# Admin
+admin = Admin(app, name="Hitch A Ride",
+              index_view=SecureAdminIndexView(),
+              base_template='admin/custom_nav.html',
+              template_mode='bootstrap3')
+
+admin.add_view(CustomUserView(models.User, db.session))
+admin.add_view(SecureModelView(models.Role, db.session))
+admin.add_view(SecureModelView(models.Trip, db.session))
+admin.add_view(SecureModelView(models.TokenBlacklist, db.session))

@@ -12,8 +12,8 @@ from flask_jwt_extended import (create_access_token,
                                 get_jti,
                                 get_raw_jwt)
 
-from application import logger as log, jwt
-from application import models, utils
+from application import logger as log
+from application import models, utils, jwt
 from application.exceptions import TokenNotFound
 from application.utils import is_revoked, revoke_token, store_token
 from . import auth_blueprint
