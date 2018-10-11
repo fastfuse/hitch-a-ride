@@ -1,5 +1,5 @@
 """
-Admin views.
+Admin views
 """
 
 from flask import url_for, redirect, request
@@ -11,7 +11,7 @@ from application import models, db, login, app
 from application.admin.forms import LoginForm
 
 
-# Create user loader function
+# Create user loader function (required for flask-login)
 @login.user_loader
 def load_user(user_id):
     return db.session.query(models.User).get(int(user_id))
@@ -28,6 +28,9 @@ class SecureModelView(ModelView):
 
 
 class CustomUserView(SecureModelView):
+    """
+    Set certain fields that will be displayed on admin page.
+    """
     column_list = ['email', 'first_name', 'last_name', 'role', 'registered_on']
 
 
@@ -68,7 +71,7 @@ class SecureAdminIndexView(AdminIndexView):
 # ======================================================================
 
 
-# Admin
+# Flask Admin instance
 admin = Admin(app, name="Hitch A Ride",
               index_view=SecureAdminIndexView(),
               base_template='admin/custom_nav.html',

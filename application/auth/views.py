@@ -12,7 +12,6 @@ from flask_jwt_extended import (create_access_token,
                                 jwt_required,
                                 get_jti,
                                 get_raw_jwt)
-from flask_login import login_required
 
 from application import logger as log
 from application import models, utils, jwt
@@ -56,6 +55,7 @@ class RegistrationView(MethodView):
                 user.hash_password(data.get('password'))
                 user.save()
 
+                # Generating confirmation token and sending email
                 token = generate_confirmation_token(user.email)
                 confirm_url = url_for('auth_blueprint.confirm_email', token=token, _external=True)
                 html = render_template('registration_confirm.html', confirm_url=confirm_url)
@@ -158,6 +158,17 @@ class RefreshTokenView(MethodView):
 
     decorators = [jwt_refresh_token_required]
 
+    def get(self):
+        user_identity = get_jwt_identity()
+        access_token = create_access_token(identity=user_identity)
+        store_token(access_token)
+
+        response = {'status': 'Success',
+                    'access_token': access_token
+                    }
+
+        return make_response(jsonify(response)), 200
+
     def post(self):
         user_identity = get_jwt_identity()
         access_token = create_access_token(identity=user_identity)
@@ -192,6 +203,7 @@ def confirm_email(token):
 
     return make_response(jsonify(response)), 200
 
+
 # =====================   Register endpoints   ==============================
 
 auth_blueprint.add_url_rule('/register',
@@ -208,7 +220,7 @@ auth_blueprint.add_url_rule('/logout',
 
 auth_blueprint.add_url_rule('/refresh',
                             view_func=RefreshTokenView.as_view('refresh'),
-                            methods=['POST'])
+                            methods=['GET', 'POST'])
 
 auth_blueprint.add_url_rule('/confirm/<token>',
                             view_func=confirm_email,

@@ -1,21 +1,58 @@
+"""
+Utility functions
+"""
+
 from collections import namedtuple
 from datetime import datetime
 
+import click
+from flask import make_response, jsonify
 from flask_jwt_extended import decode_token
 from sqlalchemy.orm.exc import NoResultFound
 
-from application import db
+from itsdangerous import URLSafeTimedSerializer
+from flask_mail import Message
+
+from application import db, models, app, mail
 from application.exceptions import TokenNotFound
 from application.models import TokenBlacklist
 
-from itsdangerous import URLSafeTimedSerializer
 
-from flask_mail import Message
+# ===================  Application CLI enhancements  =======================
 
-from . import app, mail
+@app.cli.command()
+@click.option('--email', default='admin@mail.com')
+@click.option('--password', default='Admin')
+def create_superuser(email, password):
+    """
+    Create user with role 'Admin'.
+    """
+    admin_role = models.Role.query.filter_by(name='Admin').first()
+
+    if not admin_role:
+        admin_role = models.Role(name='Admin', description='Admin role')
+        admin_role.save()
+
+    admin_user = models.User(email=email, first_name='Ad', last_name='Min', role=admin_role)
+    admin_user.hash_password(password)
+    admin_user.save()
+
+    print('Successfully created')
 
 
-from . import app
+@app.shell_context_processor
+def make_shell_context():
+    """
+    Add db and models to shell context.
+    """
+    return {'db': db, 'models': models}
+
+
+@app.errorhandler(404)
+def not_found(error):
+    """ RESTful 404 error """
+    return make_response(jsonify({'error': 'Not found'}), 404)
+
 
 # ===================  namedtuple to simplify creation of response messages  ===================
 
@@ -53,9 +90,9 @@ def json_resp(status, message):
 
 # ======================== Blacklist helpers ================
 
-# TODO: move to auth.utils ?
+# TODO: move to auth.utils?
 
-def _epoch_utc_to_datetime(epoch_utc):
+def epoch_utc_to_datetime(epoch_utc):
     """
     Helper function for converting epoch timestamps (as stored in JWTs) into
     python datetime objects (which are easier to use with sqlalchemy).
@@ -71,7 +108,7 @@ def store_token(encoded_token, identity_claim='identity'):
     jti = decoded_token['jti']
     token_type = decoded_token['type']
     user_identity = decoded_token[identity_claim]
-    expires = _epoch_utc_to_datetime(decoded_token['exp'])
+    expires = epoch_utc_to_datetime(decoded_token['exp'])
 
     db_token = TokenBlacklist(
         jti=jti,
@@ -122,6 +159,7 @@ def revoke_token(token_id, user):
         raise TokenNotFound("Could not find the token {}".format(token_id))
 
 
+# TODO: celery task (regular)?
 def prune_database():
     """
     Delete tokens that have expired from the database.

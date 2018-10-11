@@ -87,6 +87,15 @@ class Trip(db.Model, BaseMixin):
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
+    def dump(self):
+        data = {
+            'id': self.id,
+            'route': self.route,
+            'departure': self.departure.timestamp(),
+        }
+
+        return data
+
 
 class TokenBlacklist(db.Model, BaseMixin):
     """
