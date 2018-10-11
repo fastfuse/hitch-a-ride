@@ -1,8 +1,9 @@
 """
 Authentication views.
 """
+import datetime
 
-from flask import request, make_response, jsonify
+from flask import request, make_response, jsonify, url_for, render_template
 from flask.views import MethodView
 from flask_jwt_extended import (create_access_token,
                                 create_refresh_token,
@@ -11,11 +12,13 @@ from flask_jwt_extended import (create_access_token,
                                 jwt_required,
                                 get_jti,
                                 get_raw_jwt)
+from flask_login import login_required
 
 from application import logger as log
 from application import models, utils, jwt
 from application.exceptions import TokenNotFound
-from application.utils import is_revoked, revoke_token, store_token
+from application.utils import is_revoked, revoke_token, store_token, confirm_token, generate_confirmation_token, \
+    send_email
 from . import auth_blueprint
 
 
@@ -52,6 +55,12 @@ class RegistrationView(MethodView):
                 user.role = role
                 user.hash_password(data.get('password'))
                 user.save()
+
+                token = generate_confirmation_token(user.email)
+                confirm_url = url_for('auth_blueprint.confirm_email', token=token, _external=True)
+                html = render_template('registration_confirm.html', confirm_url=confirm_url)
+                subject = "Please confirm your email"
+                send_email(user.email, subject, html)
 
                 response = utils.json_resp('Success', 'Successfully registered')
 
@@ -161,6 +170,28 @@ class RefreshTokenView(MethodView):
         return make_response(jsonify(response)), 200
 
 
+def confirm_email(token):
+    try:
+        email = confirm_token(token)
+    except:
+        response = utils.json_resp('Failure', 'The confirmation link is invalid or has expired.')
+
+        return make_response(jsonify(response)), 404
+
+    user = models.User.query.filter_by(email=email).first_or_404()
+    if user.confirmed:
+        response = utils.json_resp('Success', 'Account already confirmed. Please login.')
+
+        return make_response(jsonify(response)), 200
+    else:
+        user.confirmed = True
+        user.confirmed_on = datetime.datetime.now()
+        user.save()
+
+    response = utils.json_resp('Success', 'You have confirmed your account. Thanks!')
+
+    return make_response(jsonify(response)), 200
+
 # =====================   Register endpoints   ==============================
 
 auth_blueprint.add_url_rule('/register',
@@ -178,3 +209,7 @@ auth_blueprint.add_url_rule('/logout',
 auth_blueprint.add_url_rule('/refresh',
                             view_func=RefreshTokenView.as_view('refresh'),
                             methods=['POST'])
+
+auth_blueprint.add_url_rule('/confirm/<token>',
+                            view_func=confirm_email,
+                            methods=['GET'])

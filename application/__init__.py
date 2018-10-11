@@ -5,9 +5,13 @@ from flask_jwt_extended import JWTManager
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from flask_mail import Mail
 
 app = Flask(__name__)
 app.config.from_object(os.environ['APP_SETTINGS'])
+
+# Mail
+mail = Mail(app)
 
 # Login
 login = LoginManager(app)

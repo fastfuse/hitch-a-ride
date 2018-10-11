@@ -41,6 +41,8 @@ class User(db.Model, BaseMixin, UserMixin):
     last_name = db.Column('last_name', db.String(20))
     password_hash = db.Column('password', db.String)
     registered_on = db.Column('registered_on', db.DateTime, default=datetime.now)
+    confirmed = db.Column('confirmed', db.Boolean, default=False)
+    confirmed_on = db.Column('confirmed_on', db.DateTime, nullable=True)
 
     role = db.relationship('Role', secondary=user_role, uselist=False,
                            backref=db.backref('users', lazy='dynamic'))
