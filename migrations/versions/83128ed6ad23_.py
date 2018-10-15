@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 0dd213743f5b
+Revision ID: 83128ed6ad23
 Revises: 
-Create Date: 2018-10-04 11:55:59.844236
+Create Date: 2018-10-15 12:29:24.891956
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '0dd213743f5b'
+revision = '83128ed6ad23'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -25,6 +25,15 @@ def upgrade():
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('name')
     )
+    op.create_table('token_blacklist',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('jti', sa.String(length=36), nullable=False),
+    sa.Column('token_type', sa.String(length=10), nullable=False),
+    sa.Column('user_identity', sa.String(length=50), nullable=False),
+    sa.Column('revoked', sa.Boolean(), nullable=False),
+    sa.Column('expires', sa.DateTime(), nullable=False),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('users',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('email', sa.String(length=50), nullable=True),
@@ -32,6 +41,8 @@ def upgrade():
     sa.Column('last_name', sa.String(length=20), nullable=True),
     sa.Column('password', sa.String(), nullable=True),
     sa.Column('registered_on', sa.DateTime(), nullable=True),
+    sa.Column('confirmed', sa.Boolean(), nullable=True),
+    sa.Column('confirmed_on', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email')
     )
@@ -39,8 +50,10 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('route', sa.String(), nullable=False),
     sa.Column('timestamp', sa.DateTime(), nullable=False),
-    sa.Column('user_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+    sa.Column('hitchhiker_id', sa.Integer(), nullable=True),
+    sa.Column('driver_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['driver_id'], ['users.id'], ),
+    sa.ForeignKeyConstraint(['hitchhiker_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('user_role',
@@ -57,5 +70,6 @@ def downgrade():
     op.drop_table('user_role')
     op.drop_table('trips')
     op.drop_table('users')
+    op.drop_table('token_blacklist')
     op.drop_table('roles')
     # ### end Alembic commands ###

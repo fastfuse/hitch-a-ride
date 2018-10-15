@@ -59,7 +59,9 @@ class RegistrationView(MethodView):
                 token = generate_confirmation_token(user.email)
                 confirm_url = url_for('auth_blueprint.confirm_email', token=token, _external=True)
                 html = render_template('registration_confirm.html', confirm_url=confirm_url)
+                # TODO: add better message
                 subject = "Please confirm your email"
+                # TODO: celery task
                 send_email(user.email, subject, html)
 
                 response = utils.json_resp('Success', 'Successfully registered')
@@ -90,6 +92,8 @@ class LoginView(MethodView):
         try:
             # fetch user data
             user = models.User.query.filter_by(email=data.get('email')).first()
+
+            # TODO: check if user's account is confirmed
 
             if user and user.check_password(data.get('password')):
 
@@ -184,22 +188,25 @@ class RefreshTokenView(MethodView):
 def confirm_email(token):
     try:
         email = confirm_token(token)
+    # TODO: catch certain exception
     except:
-        response = utils.json_resp('Failure', 'The confirmation link is invalid or has expired.')
+        response = utils.json_resp('Failure', 'The confirmation link is invalid or expired.')
 
         return make_response(jsonify(response)), 404
 
     user = models.User.query.filter_by(email=email).first_or_404()
+
     if user.confirmed:
         response = utils.json_resp('Success', 'Account already confirmed. Please login.')
 
         return make_response(jsonify(response)), 200
+
     else:
         user.confirmed = True
         user.confirmed_on = datetime.datetime.now()
         user.save()
 
-    response = utils.json_resp('Success', 'You have confirmed your account. Thanks!')
+    response = utils.json_resp('Success', 'You have successfully confirmed your account.')
 
     return make_response(jsonify(response)), 200
 

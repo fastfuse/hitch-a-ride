@@ -47,7 +47,9 @@ class User(db.Model, BaseMixin, UserMixin):
     role = db.relationship('Role', secondary=user_role, uselist=False,
                            backref=db.backref('users', lazy='dynamic'))
 
-    trips = db.relationship('Trip', backref='user', lazy=True)
+    # trips = db.relationship('Trip', backref='user', lazy=True)
+
+    # rides = db.relationship('Trip', backref='driver', lazy=True)
 
     def hash_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -85,7 +87,13 @@ class Trip(db.Model, BaseMixin):
     route = db.Column('route', db.String, nullable=False)
     departure = db.Column('timestamp', db.DateTime, nullable=False)
 
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    hitchhiker_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    driver_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    hitchhiker = db.relationship('User', foreign_keys=[hitchhiker_id])
+    driver = db.relationship('User', foreign_keys=[driver_id])
+
+    # TODO: add status?
 
     def dump(self):
         data = {
@@ -109,7 +117,7 @@ class TokenBlacklist(db.Model, BaseMixin):
     revoked = db.Column(db.Boolean, nullable=False)
     expires = db.Column(db.DateTime, nullable=False)
 
-    def to_dict(self):
+    def dump(self):
         return {
             'token_id': self.id,
             'jti': self.jti,

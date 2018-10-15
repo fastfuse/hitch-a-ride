@@ -189,8 +189,10 @@ def confirm_token(token, expiration=3600):
             salt=app.config['SECURITY_PASSWORD_SALT'],
             max_age=expiration
         )
+    # TODO: too broad exception
     except:
         return False
+
     return email
 
 
