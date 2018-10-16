@@ -72,7 +72,6 @@ class TripsAPI(MethodView):
         trip = models.Trip(route=data.get('route'),
                            departure=epoch_utc_to_datetime(data.get('departure')),
                            hitchhiker_id=user.id)
-
         trip.save()
 
         return make_response(jsonify(status='Created')), 201
@@ -86,6 +85,7 @@ class TripsAPI(MethodView):
         Delete trip
         """
 
+        # TODO: change status (soft delete)
         trip = models.Trip.query.get_or_404(trip_id)
 
         trip.delete()

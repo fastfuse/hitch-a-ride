@@ -14,17 +14,14 @@ from flask_jwt_extended import (create_access_token,
                                 get_raw_jwt)
 
 from application import logger as log
-from application import models, utils, jwt
+from application import models, utils
 from application.exceptions import TokenNotFound
-from application.utils import is_revoked, revoke_token, store_token, confirm_token, generate_confirmation_token, \
-    send_email
+from application.utils import (revoke_token,
+                               store_token,
+                               confirm_token,
+                               generate_confirmation_token,
+                               send_email)
 from . import auth_blueprint
-
-
-# Callback function to check if a token has been revoked
-@jwt.token_in_blacklist_loader
-def check_if_token_revoked(decoded_token):
-    return is_revoked(decoded_token)
 
 
 class RegistrationView(MethodView):
@@ -97,8 +94,8 @@ class LoginView(MethodView):
 
             if user and user.check_password(data.get('password')):
 
-                access_token = create_access_token(identity=user.email)
-                refresh_token = create_refresh_token(identity=user.email)
+                access_token = create_access_token(identity=user)
+                refresh_token = create_refresh_token(identity=user)
 
                 # store tokens to db
                 store_token(access_token)
@@ -186,6 +183,9 @@ class RefreshTokenView(MethodView):
 
 
 def confirm_email(token):
+    """
+    Email confirmation view
+    """
     try:
         email = confirm_token(token)
     # TODO: catch certain exception

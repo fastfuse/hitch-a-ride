@@ -8,12 +8,11 @@ from datetime import datetime
 import click
 from flask import make_response, jsonify
 from flask_jwt_extended import decode_token
+from flask_mail import Message
+from itsdangerous import URLSafeTimedSerializer
 from sqlalchemy.orm.exc import NoResultFound
 
-from itsdangerous import URLSafeTimedSerializer
-from flask_mail import Message
-
-from application import db, models, app, mail
+from application import db, models, app, mail, jwt
 from application.exceptions import TokenNotFound
 from application.models import TokenBlacklist
 
@@ -88,7 +87,34 @@ def json_resp(status, message):
 # })
 
 
+# ======================== JWT helpers ================
+
+
+# Callback function to check if a token has been revoked
+@jwt.token_in_blacklist_loader
+def check_if_token_revoked(decoded_token):
+    return is_revoked(decoded_token)
+
+
+# Create a function that will be called whenever create_access_token
+# is used. It will take whatever object is passed into the
+# create_access_token method, and lets us define what the identity
+# of the access token should be.
+@jwt.user_identity_loader
+def user_identity_lookup(user):
+    return user.email
+
+
+# Token additional claims
+@jwt.user_claims_loader
+def add_claims_to_access_token(user):
+    return {
+        'role': user.role.name
+    }
+
+
 # ======================== Blacklist helpers ================
+
 
 # TODO: move to auth.utils?
 
