@@ -122,7 +122,7 @@ def check_if_token_revoked(decoded_token):
 # of the access token should be.
 @jwt.user_identity_loader
 def user_identity_lookup(user):
-    return user.email
+    return user.id
 
 
 # Token additional claims

@@ -66,12 +66,13 @@ class TripsAPI(MethodView):
         data = request.get_json()
 
         user_identity = get_jwt_identity()
-        user = models.User.query.filter_by(email=user_identity).first()
+        user = models.User.query.get(user_identity)
 
         # TODO: fix json issue
         trip = models.Trip(route=data.get('route'),
                            departure=epoch_utc_to_datetime(data.get('departure')),
-                           hitchhiker_id=user.id)
+                           hitchhiker_id=user.id,
+                           status='Scheduled')
         trip.save()
 
         return make_response(jsonify(status='Created')), 201

@@ -162,7 +162,7 @@ class RefreshTokenView(MethodView):
     def get(self):
         user_identity = get_jwt_identity()
 
-        user = models.User.query.filter_by(email=user_identity).first()
+        user = models.User.query.get(user_identity)
 
         access_token = create_access_token(identity=user)
         store_token(access_token)
