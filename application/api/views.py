@@ -88,7 +88,8 @@ class TripsAPI(MethodView):
         # TODO: change status (soft delete)
         trip = models.Trip.query.get_or_404(trip_id)
 
-        trip.delete()
+        trip.status = "Cancelled"
+        trip.save()
 
         return make_response(jsonify(status='Success', message='Successfully deleted')), 200
 

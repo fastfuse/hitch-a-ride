@@ -2,6 +2,8 @@ import os
 
 
 class Config(object):
+    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
     CSRF_ENABLED = True
     SECRET_KEY = os.environ.get('SECRET_KEY',
                                 '\x86Zh\x91\xd4\x05]\x1d\x950\xe5\xa3\x01UC\x08)\xc44_\xc1\xc7\xe6~')
@@ -11,6 +13,8 @@ class Config(object):
 
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL',
                                              "postgresql://hitch:admin@localhost/hitch_db")
+
+    # SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', f'sqlite:///{os.path.join(BASE_DIR, "app.sqlite3")}')
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 

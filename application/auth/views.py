@@ -161,18 +161,10 @@ class RefreshTokenView(MethodView):
 
     def get(self):
         user_identity = get_jwt_identity()
-        access_token = create_access_token(identity=user_identity)
-        store_token(access_token)
 
-        response = {'status': 'Success',
-                    'access_token': access_token
-                    }
+        user = models.User.query.filter_by(email=user_identity).first()
 
-        return make_response(jsonify(response)), 200
-
-    def post(self):
-        user_identity = get_jwt_identity()
-        access_token = create_access_token(identity=user_identity)
+        access_token = create_access_token(identity=user)
         store_token(access_token)
 
         response = {'status': 'Success',
@@ -227,7 +219,7 @@ auth_blueprint.add_url_rule('/logout',
 
 auth_blueprint.add_url_rule('/refresh',
                             view_func=RefreshTokenView.as_view('refresh'),
-                            methods=['GET', 'POST'])
+                            methods=['GET'])
 
 auth_blueprint.add_url_rule('/confirm/<token>',
                             view_func=confirm_email,

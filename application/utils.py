@@ -24,7 +24,7 @@ from application.models import TokenBlacklist
 @click.option('--password', default='Admin')
 def create_superuser(email, password):
     """
-    Create user with role 'Admin'.
+    Create user with role 'Admin'
     """
     admin_role = models.Role.query.filter_by(name='Admin').first()
 
@@ -35,6 +35,26 @@ def create_superuser(email, password):
     admin_user = models.User(email=email, first_name='Ad', last_name='Min', role=admin_role)
     admin_user.hash_password(password)
     admin_user.save()
+
+    print('Successfully created')
+
+
+@app.cli.command()
+def add_roles():
+    """
+    Create required roles
+    """
+    admin_role = models.Role.query.filter_by(name='Admin').first()
+
+    if not admin_role:
+        admin_role = models.Role(name='Admin', description='Admin role')
+
+    driver_role = models.Role(name='Driver', description='Driver role')
+    hitchhiker_role = models.Role(name='Hitchhiker', description='Hitchhiker role')
+
+    admin_role.save()
+    driver_role.save()
+    hitchhiker_role.save()
 
     print('Successfully created')
 

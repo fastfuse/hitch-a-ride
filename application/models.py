@@ -1,10 +1,11 @@
-import enum
 from datetime import datetime
 
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from application import db
+
+STATUSES = ['Scheduled', 'Opted', 'Completed', 'Cancelled']
 
 
 class BaseMixin:
@@ -84,15 +85,10 @@ class Trip(db.Model, BaseMixin):
 
     __tablename__ = 'trips'
 
-    # class Statuses(enum.Enum):
-    #     scheduled = 'Scheduled'
-    #     completed = 'Completed'
-    #     cancelled = 'Cancelled'
-
     id = db.Column(db.Integer, primary_key=True)
     route = db.Column('route', db.String, nullable=False)
     departure = db.Column('timestamp', db.DateTime, nullable=False)
-    # status = db.Column('status', db.Enum(Statuses))
+    status = db.Column('status', db.Enum(*STATUSES, name='trip_status'))
 
     hitchhiker_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     driver_id = db.Column(db.Integer, db.ForeignKey('users.id'))
@@ -100,14 +96,12 @@ class Trip(db.Model, BaseMixin):
     hitchhiker = db.relationship('User', foreign_keys=[hitchhiker_id])
     driver = db.relationship('User', foreign_keys=[driver_id])
 
-    # TODO: add status?
-
     def dump(self):
         data = {
             'id': self.id,
             'route': self.route,
             'departure': self.departure.timestamp(),
-            'status': self.status.value
+            'status': self.status
         }
 
         return data

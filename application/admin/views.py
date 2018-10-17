@@ -81,3 +81,5 @@ admin.add_view(CustomUserView(models.User, db.session))
 admin.add_view(SecureModelView(models.Role, db.session))
 admin.add_view(SecureModelView(models.Trip, db.session))
 admin.add_view(SecureModelView(models.TokenBlacklist, db.session))
+
+# admin.add_view(SecureModelView(models.Test, db.session))
