@@ -59,6 +59,16 @@ class User(db.Model, BaseMixin, UserMixin):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+    def dump(self):
+        data = {
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'email': self.email,
+            'role': self.role.name
+        }
+
+        return data
+
     def __repr__(self):
         return '<User {}>'.format(self.email)
 

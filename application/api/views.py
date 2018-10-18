@@ -95,6 +95,24 @@ class TripsAPI(MethodView):
         return make_response(jsonify(status='Success', message='Successfully deleted')), 200
 
 
+class UserAPI(MethodView):
+    """
+    User data Resource
+    """
+
+    decorators = [jwt_required]
+
+    def get(self):
+        """
+        Get user data
+        """
+        user_id = get_jwt_identity()
+
+        user = models.User.query.get(user_id)
+
+        return make_response(jsonify(user.dump())), 200
+
+
 # =====================   Register endpoints   ==============================
 
 trips_view = TripsAPI.as_view('trips_api')
@@ -115,3 +133,7 @@ api_blueprint.add_url_rule('/trips/<int:trip_id>',
 api_blueprint.add_url_rule('/trips/<int:trip_id>',
                            view_func=trips_view,
                            methods=['DELETE'])
+
+api_blueprint.add_url_rule('/user',
+                           view_func=UserAPI.as_view('user_api'),
+                           methods=['GET'])
