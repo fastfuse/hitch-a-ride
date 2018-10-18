@@ -12,15 +12,7 @@ from application.utils import epoch_utc_to_datetime
 from . import api_blueprint
 
 
-@api_blueprint.route('/secured')
-@jwt_required
-def secured():
-    user_email = get_jwt_identity()
-
-    log.info(user_email)
-
-    return jsonify(status='Success')
-
+# TODO: add logging
 
 class TripsAPI(MethodView):
     """
@@ -86,7 +78,6 @@ class TripsAPI(MethodView):
         Delete trip
         """
 
-        # TODO: change status (soft delete)
         trip = models.Trip.query.get_or_404(trip_id)
 
         trip.status = "Cancelled"

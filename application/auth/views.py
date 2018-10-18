@@ -16,11 +16,11 @@ from flask_jwt_extended import (create_access_token,
 from application import logger as log
 from application import models, utils
 from application.exceptions import TokenNotFound
+from application.tasks import send_email
 from application.utils import (revoke_token,
                                store_token,
                                confirm_token,
-                               generate_confirmation_token,
-                               send_email)
+                               generate_confirmation_token)
 from . import auth_blueprint
 
 
@@ -58,8 +58,8 @@ class RegistrationView(MethodView):
                 html = render_template('registration_confirm.html', confirm_url=confirm_url)
                 # TODO: add better message
                 subject = "Please confirm your email"
-                # TODO: celery task
-                send_email(user.email, subject, html)
+
+                send_email.delay(user.email, subject, html)
 
                 response = utils.json_resp('Success', 'Successfully registered')
 
@@ -131,8 +131,6 @@ class LogoutView(MethodView):
         data = request.get_json()
 
         user_identity = get_jwt_identity()
-
-        # TODO: refactor
         access_token_id = get_raw_jwt().get("jti")
         refresh_token_id = get_jti(data.get("refresh_token"))
 

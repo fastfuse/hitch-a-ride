@@ -7,6 +7,10 @@ services:
     container_name: hitch_a_ride_app
     environment:
       - DATABASE_URL=postgresql://hitch:admin@postgres:5432/hitch_db
+      - REDIS_URL=redis://redis:6379
+      - CELERY_BROKER_URL=redis://redis:6379
+      - CELERY_RESULT_BACKEND=redis://redis:6379
+
     build:
      context: .
      dockerfile: Dockerfile
@@ -15,6 +19,9 @@ services:
       - "5000:5000"
     depends_on:
       - postgres
+      - celery
+      - redis
+
 
   postgres:
     image: 'postgres:alpine'
@@ -31,3 +38,20 @@ services:
 #volumes:
 #  # persist db data
 #  postgres-data:
+
+
+  celery:
+    environment:
+      - APP_SETTINGS=config.ProductionConfig
+      - REDIS_URL=redis://redis:6379/0
+    user: nobody
+    build:
+      context: .
+      dockerfile: Dockerfile-celery
+
+    depends_on:
+      - redis
+
+
+  redis:
+    image: 'redis:alpine'
