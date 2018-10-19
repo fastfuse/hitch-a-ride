@@ -14,8 +14,6 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL',
                                              "postgresql://hitch:admin@localhost/hitch_db")
 
-    # SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', f'sqlite:///{os.path.join(BASE_DIR, "app.sqlite3")}')
-
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY',
@@ -42,6 +40,8 @@ class Config(object):
                                            'redis://localhost:6379/0')
 
     CELERY_IMPORTS = ("application.tasks",)
+
+    STATUSES = ['Scheduled', 'Opted', 'Completed', 'Cancelled']
 
 
 class DevelopmentConfig(Config):

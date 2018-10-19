@@ -7,9 +7,11 @@ from flask import jsonify, make_response, request
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from application import logger as log, models
+from application import logger as log, models, app
 from application.utils import epoch_utc_to_datetime
 from . import api_blueprint
+
+STATUSES = app.config.get('STATUSES')
 
 
 # TODO: add logging
@@ -42,12 +44,24 @@ class TripsAPI(MethodView):
             trips = models.Trip.query.filter(
                 models.Trip.departure.between(departure - hour, departure + hour)).all()
 
-        else:
-            # TODO: GET all for user of ALL?
-            user_identity = get_jwt_identity()
-            user = models.User.query.filter_by(email=user_identity).first()
+        elif 'status' in request.args:
+            status = request.args.get('status')
+            if status not in STATUSES:
+                return make_response(jsonify(status='Fail', message='Invalid status')), 400
 
-            trips = models.Trip.query.filter_by(hitchhiker_id=user.id).all()
+            trips = models.Trip.query.filter_by(status=status).all()
+
+        elif 'user_id' in request.args:
+            user = models.User.query.get(request.args.get('user_id'))
+
+            if user:
+                trips = models.Trip.query.filter_by(hitchhiker_id=user.id).all()
+
+            else:
+                trips = []
+
+        else:
+            trips = models.Trip.query.all()
 
         return make_response(jsonify(trips=[trip.dump() for trip in trips])), 200
 
@@ -60,7 +74,6 @@ class TripsAPI(MethodView):
         user_identity = get_jwt_identity()
         user = models.User.query.get(user_identity)
 
-        # TODO: fix json issue
         trip = models.Trip(route=data.get('route'),
                            departure=epoch_utc_to_datetime(data.get('departure')),
                            hitchhiker_id=user.id,
@@ -75,7 +88,7 @@ class TripsAPI(MethodView):
 
     def delete(self, trip_id):
         """
-        Delete trip
+        Delete trip (aka cancel)
         """
 
         trip = models.Trip.query.get_or_404(trip_id)

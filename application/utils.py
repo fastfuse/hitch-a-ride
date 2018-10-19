@@ -8,11 +8,10 @@ from datetime import datetime
 import click
 from flask import make_response, jsonify
 from flask_jwt_extended import decode_token
-from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer
 from sqlalchemy.orm.exc import NoResultFound
 
-from application import db, models, app, mail, jwt
+from application import db, models, app, jwt
 from application.exceptions import TokenNotFound
 from application.models import TokenBlacklist
 
@@ -205,23 +204,6 @@ def revoke_token(token_id, user):
         raise TokenNotFound("Could not find the token {}".format(token_id))
 
 
-# TODO: celery task (regular)?
-def prune_database():
-    """
-    Delete tokens that have expired from the database.
-    How (and if) you call this is entirely up you. You could expose it to an
-    endpoint that only administrators could call, you could run it as a cron,
-    set it up with flask cli, etc.
-    """
-    now = datetime.now()
-    expired = TokenBlacklist.query.filter(TokenBlacklist.expires < now).all()
-
-    for token in expired:
-        token.delete()
-
-    db.session.commit()
-
-
 def generate_confirmation_token(email):
     serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
     return serializer.dumps(email, salt=app.config['SECURITY_PASSWORD_SALT'])
@@ -240,13 +222,3 @@ def confirm_token(token, expiration=3600):
         return False
 
     return email
-
-
-# def send_email(to, subject, template):
-#     msg = Message(
-#         subject,
-#         recipients=[to],
-#         html=template,
-#         sender=app.config['MAIL_DEFAULT_SENDER']
-#     )
-#     mail.send(msg)

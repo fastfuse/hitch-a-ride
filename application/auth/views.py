@@ -1,6 +1,7 @@
 """
 Authentication views.
 """
+
 import datetime
 
 from flask import request, make_response, jsonify, url_for, render_template
@@ -17,10 +18,6 @@ from application import logger as log
 from application import models, utils
 from application.exceptions import TokenNotFound
 from application.tasks import send_email
-from application.utils import (revoke_token,
-                               store_token,
-                               confirm_token,
-                               generate_confirmation_token)
 from . import auth_blueprint
 
 
@@ -52,12 +49,12 @@ class RegistrationView(MethodView):
                 user.hash_password(data.get('password'))
                 user.save()
 
-                # Generating confirmation token and sending email
-                token = generate_confirmation_token(user.email)
+                # Generate confirmation token and send email
+                token = utils.generate_confirmation_token(user.email)
                 confirm_url = url_for('auth_blueprint.confirm_email', token=token, _external=True)
                 html = render_template('registration_confirm.html', confirm_url=confirm_url)
-                # TODO: add better message
-                subject = "Please confirm your email"
+                # TODO: use configurable message
+                subject = "Registration confirm"
 
                 send_email.delay(user.email, subject, html)
 
@@ -90,24 +87,30 @@ class LoginView(MethodView):
             # fetch user data
             user = models.User.query.filter_by(email=data.get('email')).first()
 
-            # TODO: check if user's account is confirmed
+            if user:
+                if not user.confirmed:
+                    response = utils.json_resp('Fail', 'Please confirm your email to validate account')
+                    return make_response(jsonify(response)), 400
 
-            if user and user.check_password(data.get('password')):
+                if user.check_password(data.get('password')):
+                    access_token = create_access_token(identity=user)
+                    refresh_token = create_refresh_token(identity=user)
 
-                access_token = create_access_token(identity=user)
-                refresh_token = create_refresh_token(identity=user)
+                    # store tokens to db
+                    utils.store_token(access_token)
+                    utils.store_token(refresh_token)
 
-                # store tokens to db
-                store_token(access_token)
-                store_token(refresh_token)
+                    response = {'status': 'Success',
+                                'message': 'Successfully logged in',
+                                'access_token': access_token,
+                                'refresh_token': refresh_token
+                                }
 
-                response = {'status': 'Success',
-                            'message': 'Successfully logged in',
-                            'access_token': access_token,
-                            'refresh_token': refresh_token
-                            }
+                    return make_response(jsonify(response)), 200
 
-                return make_response(jsonify(response)), 200
+                else:
+                    response = utils.json_resp('Fail', 'Invalid password')
+                    return make_response(jsonify(response)), 400
 
             else:
                 response = utils.json_resp('Fail', 'User does not exist')
@@ -135,8 +138,8 @@ class LogoutView(MethodView):
         refresh_token_id = get_jti(data.get("refresh_token"))
 
         try:
-            revoke_token(access_token_id, user_identity)
-            revoke_token(refresh_token_id, user_identity)
+            utils.revoke_token(access_token_id, user_identity)
+            utils.revoke_token(refresh_token_id, user_identity)
 
             response = utils.json_resp('Success', 'Successfully Logged out')
 
@@ -163,7 +166,7 @@ class RefreshTokenView(MethodView):
         user = models.User.query.get(user_identity)
 
         access_token = create_access_token(identity=user)
-        store_token(access_token)
+        utils.store_token(access_token)
 
         response = {'status': 'Success',
                     'access_token': access_token
@@ -177,7 +180,7 @@ def confirm_email(token):
     Email confirmation view
     """
     try:
-        email = confirm_token(token)
+        email = utils.confirm_token(token)
     # TODO: catch certain exception
     except:
         response = utils.json_resp('Failure', 'The confirmation link is invalid or expired.')

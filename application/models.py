@@ -3,9 +3,9 @@ from datetime import datetime
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from application import db
+from application import db, app
 
-STATUSES = ['Scheduled', 'Opted', 'Completed', 'Cancelled']
+STATUSES = app.config.get('STATUSES')
 
 
 class BaseMixin:
