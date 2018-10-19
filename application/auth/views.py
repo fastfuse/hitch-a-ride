@@ -42,8 +42,8 @@ class RegistrationView(MethodView):
                 role = models.Role.query.filter_by(name=data.get('role')).one_or_none()
 
                 if not role:
-                    response = utils.json_resp('Fail', 'Some error occurred. Please try again')
-                    return make_response(jsonify(response)), 401
+                    response = utils.json_resp('Fail', 'Some error occurred. Please try again later')
+                    return make_response(jsonify(response)), 500
 
                 user.role = role
                 user.hash_password(data.get('password'))
@@ -64,8 +64,8 @@ class RegistrationView(MethodView):
 
             except Exception as e:
                 log.error(e)
-                response = utils.json_resp('Fail', 'Some error occurred. Please try again')
-                return make_response(jsonify(response)), 401
+                response = utils.json_resp('Fail', 'Some error occurred. Please try again later')
+                return make_response(jsonify(response)), 500
 
         else:
             response = utils.json_resp('Fail', 'User already exists. Please Log in')
@@ -199,6 +199,7 @@ def confirm_email(token):
         user.confirmed_on = datetime.datetime.now()
         user.save()
 
+    # TODO: add confirmation failure/success page
     response = utils.json_resp('Success', 'You have successfully confirmed your account.')
 
     return make_response(jsonify(response)), 200

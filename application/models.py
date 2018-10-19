@@ -49,9 +49,7 @@ class User(db.Model, BaseMixin, UserMixin):
     role = db.relationship('Role', secondary=user_role, uselist=False,
                            backref=db.backref('users', lazy='dynamic'))
 
-    # trips = db.relationship('Trip', backref='user', lazy=True)
-
-    # rides = db.relationship('Trip', backref='driver', lazy=True)
+    trips = db.relationship('Trip', backref='user', lazy=True)
 
     def hash_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -100,11 +98,7 @@ class Trip(db.Model, BaseMixin):
     departure = db.Column('timestamp', db.DateTime, nullable=False)
     status = db.Column('status', db.Enum(*STATUSES, name='trip_status'))
 
-    hitchhiker_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    driver_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-
-    hitchhiker = db.relationship('User', foreign_keys=[hitchhiker_id])
-    driver = db.relationship('User', foreign_keys=[driver_id])
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
     def dump(self):
         data = {
@@ -115,6 +109,22 @@ class Trip(db.Model, BaseMixin):
         }
 
         return data
+
+
+class Ride(db.Model, BaseMixin):
+    """
+    Model represents ride (driver + hitchhiker)
+    """
+
+    __tablename__ = 'rides'
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    hitchhiker_trip_id = db.Column(db.Integer, db.ForeignKey('trips.id'))
+    driver_trip_id = db.Column(db.Integer, db.ForeignKey('trips.id'))
+
+    hitchhiker_trip = db.relationship('Trip', foreign_keys=[hitchhiker_trip_id])
+    driver_trip = db.relationship('Trip', foreign_keys=[driver_trip_id])
 
 
 class TokenBlacklist(db.Model, BaseMixin):

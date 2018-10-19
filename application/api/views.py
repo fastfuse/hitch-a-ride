@@ -76,7 +76,7 @@ class TripsAPI(MethodView):
 
         trip = models.Trip(route=data.get('route'),
                            departure=epoch_utc_to_datetime(data.get('departure')),
-                           hitchhiker_id=user.id,
+                           user_id=user.id,
                            status='Scheduled')
         trip.save()
 

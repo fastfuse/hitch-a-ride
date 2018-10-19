@@ -31,7 +31,7 @@ class CustomUserView(SecureModelView):
     """
     Set certain fields that will be displayed on admin page.
     """
-    column_list = ['email', 'first_name', 'last_name', 'role', 'registered_on', 'confirmed', 'confirmed_on']
+    column_list = ['email', 'first_name', 'last_name', 'role', 'registered_on', 'confirmed', 'confirmed_on', 'trips']
 
 
 # ======================================================================
@@ -81,5 +81,4 @@ admin.add_view(CustomUserView(models.User, db.session))
 admin.add_view(SecureModelView(models.Role, db.session))
 admin.add_view(SecureModelView(models.Trip, db.session))
 admin.add_view(SecureModelView(models.TokenBlacklist, db.session))
-
-# admin.add_view(SecureModelView(models.Test, db.session))
+admin.add_view(SecureModelView(models.Ride, db.session))
