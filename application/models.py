@@ -105,7 +105,8 @@ class Trip(db.Model, BaseMixin):
             'id': self.id,
             'route': self.route,
             'departure': self.departure.timestamp(),
-            'status': self.status
+            'status': self.status,
+            'user_id': self.user_id
         }
 
         return data
@@ -125,6 +126,17 @@ class Ride(db.Model, BaseMixin):
 
     hitchhiker_trip = db.relationship('Trip', foreign_keys=[hitchhiker_trip_id])
     driver_trip = db.relationship('Trip', foreign_keys=[driver_trip_id])
+
+    # TODO: add status?
+
+    def dump(self):
+        data = {
+            'id': self.id,
+            'hitchhiker_trip': self.hitchhiker_trip.dump(),
+            'driver_trip': self.driver_trip.dump()
+        }
+
+        return data
 
 
 class TokenBlacklist(db.Model, BaseMixin):

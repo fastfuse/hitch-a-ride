@@ -18,4 +18,3 @@ EXPOSE 5000
 
 # run
 ENTRYPOINT flask db upgrade && flask run --host=0.0.0.0
-#ENTRYPOINT flask run --host=0.0.0.0

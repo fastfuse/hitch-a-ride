@@ -31,7 +31,7 @@ class CustomUserView(SecureModelView):
     """
     Set certain fields that will be displayed on admin page.
     """
-    column_list = ['email', 'first_name', 'last_name', 'role', 'registered_on', 'confirmed', 'confirmed_on', 'trips']
+    column_list = ['email', 'first_name', 'last_name', 'role', 'registered_on', 'confirmed', 'confirmed_on']
 
 
 # ======================================================================

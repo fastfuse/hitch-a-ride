@@ -109,9 +109,11 @@ def json_resp(status, message):
 # ======================== JWT helpers ================
 
 
-# Callback function to check if a token has been revoked
 @jwt.token_in_blacklist_loader
 def check_if_token_revoked(decoded_token):
+    """
+    Callback function to check if a token has been revoked
+    """
     return is_revoked(decoded_token)
 
 
@@ -169,7 +171,7 @@ def store_token(encoded_token, identity_claim='identity'):
 def is_revoked(decoded_token):
     """
     Checks if the given token is revoked or not. Because we are adding all the
-    tokens that we create into this database, if the token is not present
+    tokens that we create into database, if the token is not present
     in the database we are going to consider it revoked, as we don't know where
     it was created.
     """
@@ -185,7 +187,7 @@ def is_revoked(decoded_token):
 
 def get_user_tokens(user_identity):
     """
-    Returns all of the tokens for the given user
+    Returns all tokens for the given user
     """
     return TokenBlacklist.query.filter_by(user_identity=user_identity).all()
 
