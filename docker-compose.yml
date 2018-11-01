@@ -21,6 +21,7 @@ services:
       - postgres
       - celery
       - redis
+      - client
 
 
   postgres:
@@ -56,3 +57,25 @@ services:
 
   redis:
     image: 'redis:alpine'
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    volumes:
+      - './client:/usr/src/app'
+      - '/usr/src/app/node_modules'
+    ports:
+      - 3007:3000
+    environment:
+      - NODE_ENV=development
+
+#  nginx:
+#    build:
+#      context: ./services/nginx
+#      dockerfile: Dockerfile
+#    restart: always
+#    ports:
+#    - 80:80
+#    depends_on:
+#      - app

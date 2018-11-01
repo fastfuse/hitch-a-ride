@@ -17,4 +17,5 @@ ENV FLASK_ENV="development"
 EXPOSE 5000
 
 # run
+#ENTRYPOINT flask run --host=0.0.0.0
 ENTRYPOINT flask db upgrade && flask run --host=0.0.0.0

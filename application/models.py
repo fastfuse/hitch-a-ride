@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from flask import url_for
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -62,7 +63,8 @@ class User(db.Model, BaseMixin, UserMixin):
             'first_name': self.first_name,
             'last_name': self.last_name,
             'email': self.email,
-            'role': self.role.name
+            'role': self.role.name,
+            'id': self.id
         }
 
         return data

@@ -133,7 +133,7 @@ class LogoutView(MethodView):
     def post(self):
         data = request.get_json()
 
-        user_identity = get_jwt_identity()
+        user_identity = str(get_jwt_identity())
         access_token_id = get_raw_jwt().get("jti")
         refresh_token_id = get_jti(data.get("refresh_token"))
 
