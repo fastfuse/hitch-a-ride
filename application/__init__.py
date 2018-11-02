@@ -7,9 +7,11 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
 from celery import Celery
+from flask_cors import CORS
 
 app = Flask(__name__)
 app.config.from_object(os.environ['APP_SETTINGS'])
+CORS(app)
 
 # Mail
 mail = Mail(app)
