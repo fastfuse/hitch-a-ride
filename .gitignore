@@ -108,3 +108,6 @@ venv.bak/
 
 # sublime
 .sublime*
+
+# dependencies
+client/node_modules
