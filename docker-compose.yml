@@ -12,7 +12,7 @@ services:
       - CELERY_RESULT_BACKEND=redis://redis:6379
 
     build:
-     context: .
+     context: ./services/backend
      dockerfile: Dockerfile
     restart: always
     ports:
@@ -46,10 +46,11 @@ services:
       - REDIS_URL=redis://redis:6379/0
     user: nobody
     build:
-      context: .
+      context: ./services/backend
       dockerfile: Dockerfile-celery
 
-    env_file: .env
+    env_file:
+      - ./services/backend/.env
 
     depends_on:
       - redis
@@ -60,10 +61,10 @@ services:
 
   client:
     build:
-      context: ./client
+      context: ./services/client
       dockerfile: Dockerfile
     volumes:
-      - './client:/usr/src/app'
+      - './services/client:/usr/src/app'
       - '/usr/src/app/node_modules'
     ports:
       - 3007:3000

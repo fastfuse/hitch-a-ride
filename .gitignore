@@ -110,4 +110,4 @@ venv.bak/
 .sublime*
 
 # dependencies
-client/node_modules
+services/client/node_modules
