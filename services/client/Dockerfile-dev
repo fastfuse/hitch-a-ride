@@ -12,4 +12,5 @@ COPY package.json /usr/src/app/package.json
 RUN yarn --silent
 RUN yarn add react-scripts@1.1.4 -g --silent
 
-ENTRYPOINT yarn run build
+# start app
+CMD ["yarn", "start"]

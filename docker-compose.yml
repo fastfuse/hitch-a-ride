@@ -3,34 +3,53 @@
 version: '3'
 
 services:
-  app:
-    container_name: hitch_a_ride_app
-    environment:
-      - DATABASE_URL=postgresql://hitch:admin@postgres:5432/hitch_db
-      - REDIS_URL=redis://redis:6379
-      - CELERY_BROKER_URL=redis://redis:6379
-      - CELERY_RESULT_BACKEND=redis://redis:6379
+  app-prod:
+    container_name: hitch_a_ride_app_prod
+    env_file:
+      - ./services/backend/.env
 
     build:
      context: ./services/backend
      dockerfile: Dockerfile
+
     restart: always
-    ports:
-      - "5000:5000"
+
     depends_on:
       - postgres
       - celery
       - redis
-      - client
+      - client-prod
+
+
+  app-dev:
+    container_name: hitch_a_ride_app_dev
+    env_file:
+      - ./services/backend/.env
+
+    environment:
+      - APP_SETTINGS=config.DevelopmentConfig
+      - FLASK_ENV=development
+
+    build:
+      context: ./services/backend
+      dockerfile: Dockerfile-dev
+
+    restart: always
+    ports:
+      - "5000:5000"
+
+    depends_on:
+      - postgres
+      - celery
+      - redis
+      - client-dev
 
 
   postgres:
     image: 'postgres:alpine'
     container_name: hitch_a_ride_db
-    environment:
-      - POSTGRES_USER=hitch
-      - POSTGRES_PASSWORD=admin
-      - POSTGRES_DB=hitch_db
+    env_file:
+    - ./services/backend/.env
     ports:
       - "5432:5432"
 #    volumes:
@@ -42,8 +61,6 @@ services:
 
 
   celery:
-    environment:
-      - REDIS_URL=redis://redis:6379/0
     user: nobody
     build:
       context: ./services/backend
@@ -59,25 +76,36 @@ services:
   redis:
     image: 'redis:alpine'
 
-  client:
+  client-prod:
     build:
       context: ./services/client
       dockerfile: Dockerfile
     volumes:
       - './services/client:/usr/src/app'
+      - '/usr/src/app
+      /node_modules'
+    env_file:
+      - ./services/backend/.env
+
+
+  client-dev:
+    build:
+      context: ./services/client
+      dockerfile: Dockerfile-dev
+    volumes:
+      - './services/client:/usr/src/app'
       - '/usr/src/app/node_modules'
     ports:
       - 3007:3000
-    environment:
-      - NODE_ENV=development
-      - REACT_APP_URL=http://localhost:5000
+    env_file:
+      - ./services/backend/.env
 
-#  nginx:
-#    build:
-#      context: ./services/nginx
-#      dockerfile: Dockerfile
-#    restart: always
-#    ports:
-#    - 80:80
-#    depends_on:
-#      - app
+  nginx:
+    build: ./services/nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - app-prod
+
+    volumes:
+      - './services:/usr/src/app/services'
