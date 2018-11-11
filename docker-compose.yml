@@ -81,8 +81,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - './services/client:/usr/src/app'
-      - '/usr/src/app
-      /node_modules'
+      - '/usr/src/app/node_modules'
     env_file:
       - ./services/backend/.env
 
@@ -115,7 +114,7 @@ services:
       dockerfile: Dockerfile-client
 
     ports:
-      - "3001:80"
+      - "80:80"
 
     env_file:
       - ./services/backend/.env
