@@ -15,9 +15,11 @@ from flask_jwt_extended import (create_access_token,
                                 get_raw_jwt)
 
 from application import logger as log
-from application import models, utils
+from application import models, utils, app
 from application.exceptions import TokenNotFound
 from application.tasks import send_email
+from itsdangerous import SignatureExpired, BadSignature
+
 from . import auth_blueprint
 
 
@@ -52,7 +54,7 @@ class RegistrationView(MethodView):
                 # Generate confirmation token and send email
                 token = utils.generate_confirmation_token(user.email)
                 confirm_url = url_for('auth_blueprint.confirm_email', token=token, _external=True)
-                html = render_template('registration_confirm.html', confirm_url=confirm_url)
+                html = render_template('email_confirm.html', confirm_url=confirm_url)
                 # TODO: use configurable message
                 subject = "Registration confirm"
 
@@ -181,28 +183,27 @@ def confirm_email(token):
     """
     try:
         email = utils.confirm_token(token)
-    # TODO: catch certain exception
-    except:
-        response = utils.json_resp('Failure', 'The confirmation link is invalid or expired.')
 
-        return make_response(jsonify(response)), 404
+    except (SignatureExpired, BadSignature):
+        message = 'The confirmation link is invalid or expired'
+
+        return render_template('registration_confirm.html', message=message)
 
     user = models.User.query.filter_by(email=email).first_or_404()
 
     if user.confirmed:
-        response = utils.json_resp('Success', 'Account already confirmed. Please login.')
-
-        return make_response(jsonify(response)), 200
+        message = 'Account already confirmed. Please login.'
 
     else:
         user.confirmed = True
         user.confirmed_on = datetime.datetime.now()
         user.save()
 
-    # TODO: add confirmation failure/success page
-    response = utils.json_resp('Success', 'You have successfully confirmed your account.')
+        message = 'You have successfully confirmed your account'
 
-    return make_response(jsonify(response)), 200
+    login_url = app.config['REACT_APP_URL']
+
+    return render_template('registration_confirm.html', message=message, login_url=login_url)
 
 
 # =====================   Register endpoints   ==============================
