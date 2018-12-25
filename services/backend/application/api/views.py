@@ -7,7 +7,7 @@ from flask import jsonify, make_response, request
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from application import logger as log, models, app
+from application import models, app, logger as log
 from application.utils import epoch_utc_to_datetime
 from . import api_blueprint
 
@@ -21,7 +21,7 @@ class TripsAPI(MethodView):
     Trips Resource
     """
 
-    decorators = [jwt_required]
+    # decorators = [jwt_required]
 
     def get(self, trip_id):
         """
@@ -83,8 +83,21 @@ class TripsAPI(MethodView):
         return make_response(jsonify(status='Created')), 201
 
     def patch(self, trip_id):
-        # TBD
-        pass
+        """
+        Edit trip data
+        """
+        data = request.get_json()
+
+        trip = models.Trip.query.get_or_404(trip_id)
+
+        for k, v in data.items():
+            if k == 'departure':
+                v = epoch_utc_to_datetime(v)
+            setattr(trip, k, v)
+
+        trip.save()
+
+        return make_response(jsonify(status='Updated')), 204
 
     def delete(self, trip_id):
         """
@@ -177,11 +190,7 @@ api_blueprint.add_url_rule('/trips',
 
 api_blueprint.add_url_rule('/trips/<int:trip_id>',
                            view_func=trips_view,
-                           methods=['GET'])
-
-api_blueprint.add_url_rule('/trips/<int:trip_id>',
-                           view_func=trips_view,
-                           methods=['DELETE'])
+                           methods=['GET', 'PATCH', 'DELETE'])
 
 api_blueprint.add_url_rule('/user',
                            view_func=UserAPI.as_view('user_api'),
