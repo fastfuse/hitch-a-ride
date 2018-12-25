@@ -1,41 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-
-    <title>MapApp</title>
-
-    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
-    {# <link rel="stylesheet" href="/static/css/app.css"> #}
-
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
-
-  </head>
-
-
-  <body>
-
-    <div class="container">
-      <div class="row">
-        <div class="col">
-          <div class="jumbotron">
-            <h1 class="text-center display-4">Welcome to Hitch A Ride!</h1>
-            <p class="lead text-center">Thanks for signing up. Please use the button below to activate your account:</p>
-            <p class="lead text-center"><a class="btn btn-outline-success btn-md" href="{{ confirm_url }}">Activate</a></p>
-
-          </div>
-          </div>
-        </div>
-
-      </div>
+<div style="display: flex; justify-content: center; align-items: flex-start; background: #2B3E50; padding: 3% 0 6%;">
+    <div class="form" style="width: 100%;
+            text-align: center;
+            font-family: 'Open Sans', Roboto, sans-serif;
+            background: #4E5D6C;
+            margin: 24px;
+            padding: 24px;
+            max-width: 1100px;
+            border-radius: 4px;
+            color: #eee;">
+        <h1 class="header" style="font-size: 20px;">Welcome! Thanks for signing up.</h1>
+        <p class="description">Please press the button below to activate your account.</p>
+        <a href="{{ confirm_url }}" class="login" style="color: #fff;
+            background: #DF691A;
+            margin: 0 auto;
+            text-decoration: none;
+            max-width: 200px;
+            width: 100%;
+            display: block;
+            padding: 12px;
+            border-radius: 4px;"
+           onMouseOver="this.style.background='#DF691A'; this.style.opacity=0.9;"
+           onMouseOut="this.style.background='#DF691A'; this.style.opacity=1;"
+        >Activate account</a>
     </div>
-
-  </body>
-</html>
+</div>
