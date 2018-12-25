@@ -201,7 +201,7 @@ def confirm_email(token):
 
         message = 'You have successfully confirmed your account'
 
-    login_url = app.config['REACT_APP_URL']
+    login_url = app.config['CLIENT_APP_URL']
 
     return render_template('registration_confirm.html', message=message, login_url=login_url)
 
