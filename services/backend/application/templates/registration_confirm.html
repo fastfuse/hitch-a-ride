@@ -1,4 +1,26 @@
-<p>Welcome! Thanks for signing up. Please follow this link to activate your account:</p>
-<p><a href="{{ confirm_url }}">{{ confirm_url }}</a></p>
-<br>
-<p>Cheers!</p>
+<div style="display: flex; justify-content: center; align-items: flex-start; background: #2B3E50; padding: 3% 0 6%;">
+    <div class="form" style="width: 100%;
+            text-align: center;
+            font-family: 'Open Sans', Roboto, sans-serif;
+            background: #4E5D6C;
+            margin: 24px;
+            padding: 24px;
+            max-width: 1100px;
+            border-radius: 4px;
+            color: #eee;">
+        <h1 class="header" style="font-size: 20px;">Welcome! Thanks for signing up.</h1>
+        <p class="description">Please press the button below to activate your account.</p>
+        <a href="{{ redirect_url }}" class="login" style="color: #fff;
+            background: #DF691A;
+            margin: 0 auto;
+            text-decoration: none;
+            max-width: 200px;
+            width: 100%;
+            display: block;
+            padding: 12px;
+            border-radius: 4px;"
+           onMouseOver="this.style.background='#DF691A'; this.style.opacity=0.9;"
+           onMouseOut="this.style.background='#DF691A'; this.style.opacity=1;"
+        >Activate account</a>
+    </div>
+</div>

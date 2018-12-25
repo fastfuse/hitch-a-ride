@@ -23,11 +23,7 @@ services:
   app-dev:
     container_name: hitch_a_ride_app_dev
     env_file:
-      - ./services/backend/.env
-
-    environment:
-      - APP_SETTINGS=config.DevelopmentConfig
-      - FLASK_ENV=development
+      - ./services/backend/.env-dev
 
     build:
       context: ./services/backend
@@ -35,7 +31,7 @@ services:
 
     restart: always
     ports:
-      - "5000:5000"
+      - 5000:5000
 
     depends_on:
       - postgres
@@ -48,15 +44,9 @@ services:
     image: 'postgres:alpine'
     container_name: hitch_a_ride_db
     env_file:
-    - ./services/backend/.env
+      - ./services/backend/.env
     ports:
       - "5432:5432"
-#    volumes:
-#      - postgres-data:/var/lib/postgresql/data
-
-#volumes:
-#  # persist db data
-#  postgres-data:
 
 
   celery:
@@ -96,7 +86,7 @@ services:
     ports:
       - 3007:3000
     env_file:
-      - ./services/backend/.env
+      - ./services/backend/.env-dev
 
   nginx:
     build: ./services/nginx
@@ -104,22 +94,6 @@ services:
       - "80:80"
     depends_on:
       - app-prod
-
-    volumes:
-      - './services:/usr/src/app/services'
-
-  nginx-client:
-    build:
-      context: ./services/nginx
-      dockerfile: Dockerfile-client
-
-    ports:
-      - "80:80"
-
-    env_file:
-      - ./services/backend/.env
-
-    depends_on:
       - client-prod
 
     volumes:

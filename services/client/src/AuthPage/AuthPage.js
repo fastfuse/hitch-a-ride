@@ -119,10 +119,13 @@ class AuthPage extends React.Component {
         this.props.register(data).then(response => showSnackBar({
             snackVariant: response.status === 200 ? "success" : "info",
             snackMessage: response.data.message,
-        })).catch(error => showSnackBar({
-            snackVariant: "error",
-            snackMessage: error.response.data.message,
-        }));
+        })).catch(error => {
+            console.log(error);
+            return showSnackBar({
+                snackVariant: "error",
+                snackMessage: error.response.data.message,
+            })
+        });
     };
 
     handleOpen = name => () => {

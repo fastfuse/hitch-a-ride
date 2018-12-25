@@ -179,6 +179,7 @@ def confirm_email(token):
     """
     Email confirmation view
     """
+    print("Test")
     try:
         email = utils.confirm_token(token)
     # TODO: catch certain exception
@@ -200,9 +201,12 @@ def confirm_email(token):
         user.save()
 
     # TODO: add confirmation failure/success page
-    response = utils.json_resp('Success', 'You have successfully confirmed your account.')
+    # response = utils.json_resp('Success', 'You have successfully confirmed your account.')
+    #
+    # return make_response(jsonify(response)), 200
 
-    return make_response(jsonify(response)), 200
+    headers = {'Content-Type': 'text/html'}
+    return make_response(render_template('registration_confirm_success.html'), 200, headers)
 
 
 # =====================   Register endpoints   ==============================
