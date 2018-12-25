@@ -45,14 +45,12 @@ class Config(object):
 
     STATUSES = ['Scheduled', 'Opted', 'Completed', 'Cancelled']
 
+    CLIENT_APP_URL = os.environ.get('CLIENT_APP_URL', 'http://localhost:3007')
+
 
 class DevelopmentConfig(Config):
     DEVELOPMENT = True
     DEBUG = True
-
-
-class StagingConfig(Config):
-    pass
 
 
 class ProductionConfig(Config):
